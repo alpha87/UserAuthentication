@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}
+登录
+{% endblock title %}
+
+{% block main %}
+<h1>欢迎你，{{ request.session.user_name }}</h1>
+<hr />
+<button><a href="{% url 'user:logout' %}">登出</a></button>
+{% endblock main %}
