@@ -10,14 +10,16 @@ def hash_password(password):
     """混淆密码"""
 
     _password = bytes(password, encoding="utf8")
-    return bcrypt.hashpw(_password, bcrypt.gensalt())
+    hashed = str(bcrypt.hashpw(_password, bcrypt.gensalt()), encoding = "utf-8")
+    return hashed
 
 
 def check_password(password, hashed):
     """核对密码"""
 
     _password = bytes(password, encoding="utf8")
-    if bcrypt.checkpw(_password, hashed):
+    _hashed = bytes(hashed, encoding="utf8")
+    if bcrypt.checkpw(_password, _hashed):
         return True
     else:
         return False

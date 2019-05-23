@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from .forms import LoginForm, RegistrationForm
 from .models import User
 from utils.send_email import send_email
+from utils.password_hash import hash_password, check_password
 
 
 """
@@ -48,7 +49,7 @@ def login(request):
             except:
                 messages.warning(request, '用户不存在')
                 return render(request, 'user/login.html', context={"form": form})
-            if user.password_hash == password:
+            if check_password(password, user.password_hash):
                 request.session['is_login'] = True
                 request.session['user_email'] = user.email
                 request.session['user_name'] = user.username
@@ -72,7 +73,7 @@ def sign_up(request):
             password2 = form.cleaned_data["password2"]
             if password == password2:
                 u = User(email=email, username=username,
-                         password_hash=password)
+                         password_hash=hash_password(password))
                 token = u.generate_token(email)
                 link = request.build_absolute_uri(u.get_absolute_url(token))
                 u.save()
