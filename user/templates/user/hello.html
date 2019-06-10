@@ -9,5 +9,6 @@
 {% block main %}
 <h1>欢迎你，{{ request.session.user_name }}</h1>
 <hr />
+<button><a href="{% url 'user:retake-password' %}">修改密码</a></button>
 <button><a href="{% url 'user:logout' %}">登出</a></button>
 {% endblock main %}

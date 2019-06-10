@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.core.mail import send_mail
 
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm, RegistrationForm, RetakePassword
 from .models import User
 from utils.send_email import send_email
 from utils.password_hash import hash_password, check_password
@@ -90,6 +90,7 @@ def sign_up(request):
 
 
 def confirm(request, token):
+    """邮件验证"""
     if not request.session.get('is_login', None):
         return redirect("user:login")
     email = request.session['user_email']
@@ -106,3 +107,25 @@ def confirm(request, token):
         else:
             messages.warning(request, '认证失败')
             return redirect("user:hello")
+
+
+def retake_password(request):
+    """修改密码"""
+
+    form = RetakePassword(request.POST)
+    if not request.session['is_login']:
+        return redirect("user:login")
+
+    if request.method == "POST":
+        if form.is_valid():
+            password = form.cleaned_data["password"]
+            password2 = form.cleaned_data["password2"]
+            if password == password2:
+                u = User.objects.get(email=request.session['user_email'])
+                u.password_hash = hash_password(password)
+                u.save()
+                messages.success(request, '密码修改成功！请重新登录')
+                request.session.flush()
+                return redirect("user:login")
+        else:
+            return render(request, "user/retakepassword.html", context={"form": form})

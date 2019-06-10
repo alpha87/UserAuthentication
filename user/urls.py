@@ -10,4 +10,5 @@ urlpatterns = [
     path('hello/', views.hello, name='hello'),
     path('register/', views.sign_up, name='register'),
     path('confirm/<token>', views.confirm, name='confirm'),
+    path('retake-password/', views.retake_password, name='retake-password')
 ]
