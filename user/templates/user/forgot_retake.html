@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}
+重设密码
+{% endblock title %}
+
+{% block main %}
+<h1>重设密码</h1>
+<hr />
+<form action="{% url 'user:forgot_confirm' token %}" method="post">
+	<div class="form-group">
+		<div class="form-group">
+			{% csrf_token %}
+		</div>
+		<label for="{{ form.email.id_for_label }}">电子邮件：</label>
+		<div class="form-group">
+			{{ form.email }}
+        </div>
+        <label for="{{ form.password.id_for_label }}">新密码：</label>
+		<div class="form-group">
+			{{ form.password }}
+		</div>
+		<label for="{{ form.password2.id_for_label }}">请再输入一次：</label>
+		<div class="form-group">
+			{{ form.password2 }}
+        </div>
+        <label for="{{ form.captcha.id_for_label }}">验证码：</label>
+		<div class="form-group">
+			{{ form.captcha }}
+		</div>
+		<input type="submit" class="btn btn-primary" value="提交">
+</form>
+{% endblock main %}

@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.core.mail import send_mail
+from threading import Thread
 
-from .forms import LoginForm, RegistrationForm, RetakePassword
+from .forms import LoginForm, RegistrationForm, RetakePassword, Forgot, ForgotRetake
 from .models import User
 from utils.send_email import send_email
 from utils.password_hash import hash_password, check_password
@@ -77,9 +78,9 @@ def sign_up(request):
                 token = u.generate_token(email)
                 link = request.build_absolute_uri(u.get_absolute_url(token))
                 u.save()
-
                 # 发送认证邮件
-                send_email(receiver=email, link=link)
+                thr = Thread(target=send_email, args=[email, link])
+                thr.start()
                 messages.success(request, '注册成功，请及时查收确认邮件！')
                 return redirect("user:login")
             else:
@@ -90,7 +91,7 @@ def sign_up(request):
 
 
 def confirm(request, token):
-    """邮件验证"""
+    """新用户注册 邮件验证"""
     if not request.session.get('is_login', None):
         return redirect("user:login")
     email = request.session['user_email']
@@ -107,6 +108,35 @@ def confirm(request, token):
         else:
             messages.warning(request, '认证失败')
             return redirect("user:hello")
+
+
+def forgot_confirm(request, token):
+    """忘记密码 邮件验证"""
+    form = ForgotRetake(request.POST)
+
+    if request.method == "POST":
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
+            password2 = form.cleaned_data["password2"]
+            try:
+                # 用户存在
+                u = User.objects.get(email=email)
+                if (password == password2) and (u.confirm(email=email, token=bytes(token, encoding="utf8"))):
+                    u = User.objects.get(email=email)
+                    u.password_hash = hash_password(password)
+                    u.save()
+                    messages.success(request, '密码修改成功！请重新登录')
+                    request.session.flush()
+                    return redirect("user:login")
+                else:
+                    messages.warning(request, '您的输入有误，请重试！')
+                    return redirect("user:forgot")
+            except User.DoesNotExist:
+                # 用户不存在
+                messages.warning(request, '用户不存在！')
+                return redirect("user:forgot")
+    return render(request, "user/forgot_retake.html", context={"form": form, "token": token})
 
 
 def retake_password(request):
@@ -127,5 +157,29 @@ def retake_password(request):
                 messages.success(request, '密码修改成功！请重新登录')
                 request.session.flush()
                 return redirect("user:login")
-        else:
-            return render(request, "user/retakepassword.html", context={"form": form})
+
+    return render(request, "user/retakepassword.html", context={"form": form})
+
+
+def forgot(request):
+    """忘记密码"""
+
+    form = Forgot(request.POST)
+    if request.method == "POST":
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            try:
+                # 用户存在
+                u = User.objects.get(email=email)
+                token = u.generate_token(email)
+                link = request.build_absolute_uri(u.get_forgot_absolute_url(token))
+                # 发送认证邮件
+                thr = Thread(target=send_email, args=[email, link, "forgot"])
+                thr.start()
+                messages.success(request, '邮件已发送，请及时查收！')
+                return redirect("user:login")
+            except User.DoesNotExist:
+                # 用户不存在
+                messages.warning(request, '用户不存在！')
+                return redirect("user:forgot")
+    return render(request, "user/forgot.html", context={"form": form})

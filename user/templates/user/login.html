@@ -27,6 +27,7 @@
 			{{ form.captcha }}
 		</div>
 		<input type="submit" class="btn btn-primary" value="登录">
+		<small><a href="{% url 'user:forgot' %}">忘记密码</a></small>
 		<div>还没有账号，<a href="{% url 'user:register' %}"><b><u>点击注册</u></b></a></div>
 </form>
 {% endblock main %}

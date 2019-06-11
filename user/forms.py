@@ -38,3 +38,23 @@ class RetakePassword(forms.Form):
     password2 = forms.CharField(widget=forms.PasswordInput())
     # 验证码
     captcha = CaptchaField(label='验证码')
+
+
+class Forgot(forms.Form):
+    """忘记密码"""
+
+    # 电子邮箱地址
+    email = forms.EmailField()
+
+
+class ForgotRetake(forms.Form):
+    """验证邮箱后重新设置密码"""
+
+    # email
+    email = forms.EmailField()
+    # 密码
+    password = forms.CharField(widget=forms.PasswordInput())
+    # 二次输入密码
+    password2 = forms.CharField(widget=forms.PasswordInput())
+    # 验证码
+    captcha = CaptchaField(label='验证码')

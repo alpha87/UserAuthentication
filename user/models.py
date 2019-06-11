@@ -42,5 +42,8 @@ class User(models.Model):
     def get_absolute_url(self, token):
         return reverse("user:confirm", args=[token])
 
+    def get_forgot_absolute_url(self, token):
+        return reverse("user:forgot_confirm", args=[token])
+
     def __str__(self):
         return self.username

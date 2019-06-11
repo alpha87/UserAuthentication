@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}
+忘记密码
+{% endblock title %}
+
+{% block main %}
+<h1>忘记密码</h1>
+<hr />
+<form action="{% url 'user:forgot' %}" method="post">
+	<div class="form-group">
+		<div class="form-group">
+			{% csrf_token %}
+		</div>
+		<label for="{{ form.email.id_for_label }}">电子邮件：</label>
+		<div class="form-group">
+			{{ form.email }}
+		</div>
+		<input type="submit" class="btn btn-primary" value="提交">
+</form>
+{% endblock main %}
